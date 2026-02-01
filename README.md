@@ -1,0 +1,194 @@
+# 🐳 Frame Dock - Docker Management Dashboard
+
+A modern, lightweight Docker container management dashboard with automated scheduling capabilities.
+
+## ✨ Features
+
+- 🐳 **Container Management**: Full CRUD operations for Docker containers
+- 📅 **Automated Scheduling**: Schedule container actions (start/stop/restart) with flexible time expressions
+- 🖼️ **Image Management**: View, delete, and prune Docker images
+- 📊 **Resource Monitoring**: Track CPU, memory, and network usage
+- ⚙️ **Settings**: User management and application configuration
+- 🎨 **Modern UI**: Beautiful dark theme with responsive design
+
+## 🏗️ Architecture
+
+### 🐍 Backend (FastAPI + Python)
+- **Framework**: FastAPI ⚡
+- **Database**: SQLite 💾
+- **Docker Integration**: Docker SDK for Python 🐋
+- **Scheduling**: APScheduler ⏰
+
+### ⚛️ Frontend (React + TypeScript)
+- **Framework**: React 19 with TypeScript 💙
+- **Build Tool**: Vite ⚡
+- **Styling**: Tailwind CSS 🎨
+- **Icons**: Lucide React 🎯
+- **HTTP Client**: Axios 🌐
+
+## 🚀 Quick Start
+
+### 📋 Prerequisites
+- 🐍 Python 3.8+
+- 📦 Node.js 18+
+- 🐳 Docker installed and running
+
+### 🔧 Backend Setup
+
+1️⃣ Create and activate virtual environment:
+```bash
+python -m venv venv
+# Windows
+venv\Scripts\activate
+# Linux/Mac
+source venv/bin/activate
+```
+
+2️⃣ Install dependencies:
+```bash
+pip install -r requirements.txt
+```
+
+3️⃣ Configure environment:
+```bash
+# Copy .env.example to .env and configure
+cp .env.example .env
+```
+
+4️⃣ Run the backend:
+```bash
+uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
+```
+
+✅ Backend will be available at `http://localhost:8000`  
+📚 API documentation at `http://localhost:8000/docs`
+
+> **💡 Note**: When running via Docker, the application will be available at `http://localhost:8765`
+
+### 🎨 Frontend Setup
+
+1️⃣ Navigate to UI folder:
+```bash
+cd ui
+```
+
+2️⃣ Install dependencies:
+```bash
+npm install
+```
+
+3️⃣ Start development server:
+```bash
+npm run dev
+```
+
+✅ Frontend will be available at `http://localhost:3000`
+
+### 🔐 Default Credentials
+- **Username**: `admin`
+- **Password**: `admin123`
+
+## 📖 API Documentation
+
+Full API documentation is available at `/docs` when the backend is running.
+
+🔑 Key endpoints:
+- 🐳 `/api/v1/docker/containers` - Container management
+- 📅 `/api/v1/schedules` - Schedule management
+- 🖼️ `/api/v1/docker/images` - Image management
+
+## 📁 Project Structure
+
+```
+frame-dock-py/
+├── 🐍 app/                 # Backend application
+│   ├── 🛣️ api/            # API routes
+│   ├── ⚙️ core/           # Core configuration
+│   ├── 💾 models/         # Database models
+│   ├── 📋 schemas/        # Pydantic schemas
+│   └── 🔧 services/       # Business logic
+├── ⚛️ ui/                 # Frontend application
+│   └── src/
+│       ├── 🧩 components/ # React components
+│       ├── 📄 pages/      # Page components
+│       ├── 🌐 api.ts      # API client
+│       └── 📝 types.ts    # TypeScript types
+├── 📦 requirements.txt    # Python dependencies
+└── 📖 README.md          # This file
+```
+
+## 💻 Development
+
+### 🐳 Docker Deployment (Recommended)
+
+The easiest way to run Frame Dock is using Docker:
+
+```bash
+# Using Docker Hub image
+docker run -d \
+  -p 8765:8000 \
+  -v /var/run/docker.sock:/var/run/docker.sock \
+  -v ./data:/app/data \
+  -e SECRET_KEY=your-secret-key \
+  your-dockerhub-username/frame-dock:latest
+```
+
+Or with docker-compose:
+```bash
+docker-compose up -d
+```
+
+### 🏗️ Building for Production
+
+**🐍 Backend:**
+```bash
+# The backend runs as-is with uvicorn
+uvicorn app.main:app --host 0.0.0.0 --port 8765
+```
+
+**⚛️ Frontend:**
+```bash
+cd ui
+npm run build
+# Serve the dist folder with any static file server
+```
+
+**🐳 Docker:**
+```bash
+# Build the image locally
+docker build -t frame-dock:latest .
+
+# Run the container
+docker run -d \
+  -p 8765:8000 \
+  -v /var/run/docker.sock:/var/run/docker.sock \
+  -v ./data:/app/data \
+  frame-dock:latest
+```
+
+## 🎯 Features in Detail
+
+### 🐳 Container Management
+- ✅ Create containers with custom configuration (ports, environment variables, volumes)
+- ▶️ Start, stop, restart, and delete containers
+- 📊 View real-time container stats
+- 🔍 Filter and search containers
+
+### 📅 Scheduling
+- 🌅 **Daily**: Run actions at specific times (e.g., "22:30")
+- 📆 **Weekly**: Run actions on specific days (e.g., "mon 08:00")
+- 📌 **Monthly**: Run actions on specific dates (e.g., "1 00:00")
+- ⏱️ **Custom**: One-time execution at specific datetime
+
+### 🖼️ Image Management
+- 👀 View all local Docker images
+- 🗑️ Delete individual images
+- 🧹 Prune unused images to free up space
+
+## 🤝 Contributing
+
+Contributions are welcome! Please feel free to submit a Pull Request.
+
+## 📄 License
+
+MIT License - see LICENSE file for details
