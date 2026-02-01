@@ -1,0 +1,12 @@
+__pycache__
+*.pyc
+*.pyo
+venv/
+.env
+.git/
+.gitignore
+*.md
+sql_app.db
+.mypy_cache/
+ui/node_modules
+ui/dist
