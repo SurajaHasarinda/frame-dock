@@ -2,6 +2,21 @@
 
 A modern, lightweight Docker container management dashboard with automated scheduling capabilities.
 
+## 🚀 Quick Start (TL;DR)
+
+```bash
+# Pull and run from Docker Hub
+docker compose -f docker-compose.frame-dock.yml up -d
+
+# Access at: http://localhost:8765
+# Login: admin / admin123
+```
+
+> 📦 **Docker Hub**: [`surajadev/frame-dock`](https://hub.docker.com/r/surajadev/frame-dock)
+
+
+
+
 ## ✨ Features
 
 - 🐳 **Container Management**: Full CRUD operations for Docker containers
@@ -84,9 +99,20 @@ npm run dev
 
 ✅ Frontend will be available at `http://localhost:3000`
 
-### 🔐 Default Credentials
-- **Username**: `admin`
-- **Password**: `admin123`
+## 🔐 Default Login Credentials
+
+**After starting Frame Dock, login with:**
+
+| Field | Value |
+|-------|-------|
+| **Username** | `admin` |
+| **Password** | `admin123` |
+
+> ⚠️ **IMPORTANT**: Change the default password immediately after first login via Settings → Change Password
+
+**Access Points:**
+- 🌐 **Application**: `http://localhost:8765` (Docker) or `http://localhost:8000` (Local)
+
 
 ## 📖 API Documentation
 
@@ -121,50 +147,53 @@ frame-dock-py/
 
 ### 🐳 Docker Deployment (Recommended)
 
-The easiest way to run Frame Dock is using Docker:
+Frame Dock is available as a pre-built Docker image on Docker Hub for easy deployment.
+
+#### 🚀 Option 1: Docker Hub (Production - Fastest)
+
+**Pull and run the latest image:**
 
 ```bash
-# Using Docker Hub image
+# Pull the image
+docker pull surajadev/frame-dock:latest
+
+# Run with Docker
 docker run -d \
+  --name frame-dock \
   -p 8765:8000 \
   -v /var/run/docker.sock:/var/run/docker.sock \
   -v ./data:/app/data \
-  -e SECRET_KEY=your-secret-key \
-  your-dockerhub-username/frame-dock:latest
+  -e SECRET_KEY=your-secret-key-here \
+  -e TZ=Asia/Colombo \
+  --restart unless-stopped \
+  surajadev/frame-dock:latest
 ```
 
-Or with docker-compose:
+**Or use Docker Compose (Recommended):**
+
 ```bash
-docker-compose up -d
+# Use the Frame Dock compose file
+docker compose -f docker-compose.frame-dock.yml up -d
 ```
 
-### 🏗️ Building for Production
+**Configuration:**
+1. Copy `.env.example` to `.env`
+2. Update the `SECRET_KEY` in `.env` (important for production!)
+3. Run: `docker compose -f docker-compose.frame-dock.yml up -d`
 
-**🐍 Backend:**
-```bash
-# The backend runs as-is with uvicorn
-uvicorn app.main:app --host 0.0.0.0 --port 8765
-```
+#### 🔧 Option 2: Build Locally (Development)
 
-**⚛️ Frontend:**
-```bash
-cd ui
-npm run build
-# Serve the dist folder with any static file server
-```
+**Build and run from source:**
 
-**🐳 Docker:**
 ```bash
-# Build the image locally
+# Build the image
 docker build -t frame-dock:latest .
 
-# Run the container
-docker run -d \
-  -p 8765:8000 \
-  -v /var/run/docker.sock:/var/run/docker.sock \
-  -v ./data:/app/data \
-  frame-dock:latest
+# Run with docker-compose
+docker compose up -d
 ```
+
+This option builds the image locally, which is useful for development or customization.
 
 ## 🎯 Features in Detail
 
