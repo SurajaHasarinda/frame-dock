@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Ship, Lock, User, Loader2, AlertCircle } from 'lucide-react';
+import { Lock, User, Loader2, AlertCircle } from 'lucide-react';
 import { api } from '../api';
 
 interface LoginPageProps {
@@ -34,9 +34,7 @@ const LoginPage: React.FC<LoginPageProps> = ({ onLogin }) => {
         <div className="min-h-screen bg-slate-950 flex flex-col items-center justify-center p-6">
             <div className="w-full max-w-md">
                 <div className="flex flex-col items-center mb-10 text-center">
-                    <div className="bg-docker p-4 rounded-2xl shadow-lg shadow-docker/20 mb-6">
-                        <Ship size={48} className="text-white" />
-                    </div>
+                    <img src="/frame-dock.svg" alt="Frame Dock" className="w-20 h-20 mb-6" />
                     <h1 className="text-4xl font-extrabold text-white mb-2">Frame Dock</h1>
                     <p className="text-slate-400">Manage your containers with precision.</p>
                 </div>

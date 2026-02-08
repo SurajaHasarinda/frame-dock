@@ -6,7 +6,6 @@ import {
     Layers,
     Settings,
     LogOut,
-    Ship,
     ChevronRight,
     User
 } from 'lucide-react';
@@ -37,9 +36,7 @@ const Layout = ({ children }: LayoutProps) => {
             {/* Sidebar */}
             <aside className="w-64 bg-slate-900 border-r border-slate-800 flex flex-col hidden md:flex">
                 <div className="p-6 flex items-center gap-3">
-                    <div className="bg-docker p-2 rounded-lg">
-                        <Ship className="text-white" size={24} />
-                    </div>
+                    <img src="/frame-dock.svg" alt="Frame Dock" className="w-8 h-8" />
                     <h1 className="text-xl font-bold tracking-tight text-white">Frame Dock</h1>
                 </div>
 
@@ -87,7 +84,7 @@ const Layout = ({ children }: LayoutProps) => {
                 {/* Header for mobile */}
                 <header className="md:hidden flex items-center justify-between p-4 bg-slate-900 border-b border-slate-800">
                     <div className="flex items-center gap-2">
-                        <Ship className="text-docker" size={24} />
+                        <img src="/frame-dock.svg" alt="Frame Dock" className="w-8 h-8" />
                         <span className="font-bold text-white">Frame Dock</span>
                     </div>
                     <button onClick={handleLogout} className="p-2 text-slate-400">
