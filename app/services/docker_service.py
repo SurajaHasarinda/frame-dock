@@ -49,7 +49,7 @@ class DockerService:
             }
             for c in containers
             # Exclude self container
-            if self.current_container_id and c.id != self.current_container_id and not c.id.startswith(self.current_container_id)
+            if not self.current_container_id or (c.id != self.current_container_id and not c.id.startswith(self.current_container_id))
         ]
 
     def get_container(self, container_id: str):

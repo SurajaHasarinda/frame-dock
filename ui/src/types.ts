@@ -70,3 +70,56 @@ export interface CreateScheduleRequest {
     wake_time_expression?: string;  // Required for sleep action
     is_active?: boolean;
 }
+
+// System Stats Types
+export interface CpuInfo {
+    percent: number;
+    count: number;
+    count_logical: number;
+    freq_current: number | null;
+    freq_max: number | null;
+    per_cpu_percent: number[];
+}
+
+export interface MemoryInfo {
+    total: number;
+    available: number;
+    used: number;
+    percent: number;
+    swap_total: number;
+    swap_used: number;
+    swap_free: number;
+    swap_percent: number;
+}
+
+export interface DiskUsage {
+    device: string;
+    mountpoint: string;
+    fstype: string;
+    total: number;
+    used: number;
+    free: number;
+    percent: number;
+}
+
+export interface NetworkInterface {
+    name: string;
+    bytes_sent: number;
+    bytes_recv: number;
+    packets_sent: number;
+    packets_recv: number;
+    errin: number;
+    errout: number;
+    dropin: number;
+    dropout: number;
+}
+
+export interface SystemStats {
+    cpu: CpuInfo;
+    memory: MemoryInfo;
+    disks: DiskUsage[];
+    network: NetworkInterface[];
+    uptime: number;
+    boot_time: number;
+}
+

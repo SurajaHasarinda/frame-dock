@@ -6,6 +6,7 @@ import {
     AuthUser,
     CreateContainerRequest,
     CreateScheduleRequest,
+    SystemStats,
 } from './types';
 
 const API_BASE_URL = '/api/v1';
@@ -196,7 +197,7 @@ class ApiService {
             time_expression: schedule.time_expression,
             is_active: !schedule.is_active,
         };
-        
+
         // Include wake_time_expression if it exists
         if (schedule.wake_time_expression) {
             updateData.wake_time_expression = schedule.wake_time_expression;
@@ -231,6 +232,12 @@ class ApiService {
     // Health
     async healthCheck(): Promise<{ msg: string }> {
         const response = await this.client.get('/health');
+        return response.data;
+    }
+
+    // System Stats
+    async getSystemStats(): Promise<SystemStats> {
+        const response = await this.client.get('/system/stats');
         return response.data;
     }
 }

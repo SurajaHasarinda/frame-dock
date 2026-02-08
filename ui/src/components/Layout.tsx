@@ -7,7 +7,8 @@ import {
     Settings,
     LogOut,
     ChevronRight,
-    User
+    User,
+    Activity,
 } from 'lucide-react';
 import { api } from '../api';
 
@@ -26,6 +27,7 @@ const Layout = ({ children }: LayoutProps) => {
 
     const navItems = [
         { name: 'Containers', path: '/', icon: <Box size={20} /> },
+        { name: 'Stats', path: '/stats', icon: <Activity size={20} /> },
         { name: 'Schedules', path: '/schedules', icon: <Calendar size={20} /> },
         { name: 'Images', path: '/images', icon: <Layers size={20} /> },
         { name: 'Settings', path: '/settings', icon: <Settings size={20} /> },

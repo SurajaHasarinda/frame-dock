@@ -7,6 +7,7 @@ import ContainersPage from './pages/ContainersPage';
 import SchedulesPage from './pages/SchedulesPage';
 import ImagesPage from './pages/ImagesPage';
 import SettingsPage from './pages/SettingsPage';
+import StatsPage from './pages/StatsPage';
 
 /**
  * ProtectedRoute component that redirects to login if the user is not authenticated.
@@ -62,6 +63,14 @@ function App() {
                     <ProtectedRoute>
                         <Layout>
                             <SettingsPage />
+                        </Layout>
+                    </ProtectedRoute>
+                } />
+
+                <Route path="/stats" element={
+                    <ProtectedRoute>
+                        <Layout>
+                            <StatsPage />
                         </Layout>
                     </ProtectedRoute>
                 } />
