@@ -14,12 +14,14 @@ import {
 } from 'lucide-react';
 import { api } from '../api';
 import { SystemStats, DiskUsage, NetworkInterface } from '../types';
+import MemoryDetailsModal from '../components/modals/MemoryDetailsModal';
 
 const StatsPage: React.FC = () => {
     const [stats, setStats] = useState<SystemStats | null>(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [autoRefresh, setAutoRefresh] = useState(true);
+    const [isMemoryModalOpen, setIsMemoryModalOpen] = useState(false);
 
     const fetchStats = useCallback(async () => {
         try {
@@ -228,9 +230,12 @@ const StatsPage: React.FC = () => {
                         </div>
 
                         {/* Memory Card */}
-                        <div className="bg-slate-900/50 backdrop-blur rounded-xl border border-slate-800 p-6">
+                        <div
+                            className="bg-slate-900/50 backdrop-blur rounded-xl border border-slate-800 p-6 cursor-pointer hover:border-purple-500/50 transition-all group"
+                            onClick={() => setIsMemoryModalOpen(true)}
+                        >
                             <div className="flex items-center gap-3 mb-6">
-                                <div className="w-10 h-10 rounded-lg bg-purple-500/20 flex items-center justify-center">
+                                <div className="w-10 h-10 rounded-lg bg-purple-500/20 flex items-center justify-center group-hover:bg-purple-500/30 transition-colors">
                                     <MemoryStick className="w-5 h-5 text-purple-400" />
                                 </div>
                                 <div>
@@ -269,7 +274,7 @@ const StatsPage: React.FC = () => {
                                             {formatBytes(stats.memory.swap_used)} / {formatBytes(stats.memory.swap_total)}
                                         </span>
                                     </div>
-                                    <div className="h-2 bg-slate-800 rounded-full overflow-hidden">
+                                    <div className="h-3 bg-slate-800 rounded-full overflow-hidden">
                                         <div
                                             className={`h-full ${getBarColorByPercent(stats.memory.swap_percent)} transition-all duration-300`}
                                             style={{ width: `${stats.memory.swap_percent}%` }}
@@ -388,6 +393,11 @@ const StatsPage: React.FC = () => {
                     </div>
                 </>
             )}
+
+            <MemoryDetailsModal
+                isOpen={isMemoryModalOpen}
+                onClose={() => setIsMemoryModalOpen(false)}
+            />
         </div>
     );
 };

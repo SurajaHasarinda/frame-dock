@@ -61,11 +61,11 @@ const SchedulesPage: React.FC = () => {
             fetchSchedules();
         } catch (error: any) {
             console.error('Failed to toggle schedule:', error);
-            const errorMessage = typeof error.response?.data?.detail === 'string' 
+            const errorMessage = typeof error.response?.data?.detail === 'string'
                 ? error.response.data.detail
                 : Array.isArray(error.response?.data?.detail)
-                ? error.response.data.detail.map((e: any) => e.msg || JSON.stringify(e)).join(', ')
-                : 'Failed to toggle schedule';
+                    ? error.response.data.detail.map((e: any) => e.msg || JSON.stringify(e)).join(', ')
+                    : 'Failed to toggle schedule';
             setSnackbar({
                 isOpen: true,
                 message: errorMessage,
@@ -97,11 +97,11 @@ const SchedulesPage: React.FC = () => {
             fetchSchedules();
         } catch (error: any) {
             console.error('Failed to delete schedule:', error);
-            const errorMessage = typeof error.response?.data?.detail === 'string' 
+            const errorMessage = typeof error.response?.data?.detail === 'string'
                 ? error.response.data.detail
                 : Array.isArray(error.response?.data?.detail)
-                ? error.response.data.detail.map((e: any) => e.msg || JSON.stringify(e)).join(', ')
-                : 'Failed to delete schedule';
+                    ? error.response.data.detail.map((e: any) => e.msg || JSON.stringify(e)).join(', ')
+                    : 'Failed to delete schedule';
             setSnackbar({
                 isOpen: true,
                 message: errorMessage,
@@ -167,14 +167,14 @@ const SchedulesPage: React.FC = () => {
                             .filter(c => c !== undefined) as Container[];
                         const missingCount = schedule.container_ids.length - scheduleContainers.length;
                         const isGrouped = schedule.container_ids.length > 1;
-                        
+
                         // Build display name
                         const displayName = scheduleContainers.length === 0
                             ? 'No containers'
                             : scheduleContainers.length === 1
-                            ? scheduleContainers[0].name
-                            : `${scheduleContainers.map(c => c.name).join(', ')}`;
-                        
+                                ? scheduleContainers[0].name
+                                : `${scheduleContainers.map(c => c.name).join(', ')}`;
+
                         return (
                             <div key={schedule.id} className="bg-slate-900 border border-slate-800 hover:border-slate-700 rounded-xl p-5 transition-all">
                                 {missingCount > 0 && (
@@ -190,17 +190,17 @@ const SchedulesPage: React.FC = () => {
                                         </div>
                                         <div className="flex-1">
                                             <div className="flex items-center gap-3 flex-wrap">
-                                                <h3 className="text-lg font-bold text-white">{displayName}</h3>
+                                                <h3 className="text-lg font-bold text-white truncate max-w-[180px] md:max-w-[400px]" title={displayName}>{displayName}</h3>
                                                 {isGrouped && (
-                                                    <span className="px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-purple-500/10 text-purple-400">
+                                                    <span className="px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-purple-500/10 text-purple-400 shrink-0">
                                                         Group ({schedule.container_ids.length})
                                                     </span>
                                                 )}
-                                                <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider ${getActionColor(schedule.action)}`}>
+                                                <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider ${getActionColor(schedule.action)} shrink-0`}>
                                                     {schedule.action}
                                                 </span>
                                                 <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider ${schedule.is_active ? 'bg-success/10 text-success' : 'bg-slate-800 text-slate-500'
-                                                    }`}>
+                                                    } shrink-0`}>
                                                     {schedule.is_active ? 'Active' : 'Inactive'}
                                                 </span>
                                             </div>

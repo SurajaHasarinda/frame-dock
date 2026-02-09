@@ -7,6 +7,7 @@ import {
     CreateContainerRequest,
     CreateScheduleRequest,
     SystemStats,
+    ContainerStats,
 } from './types';
 
 const API_BASE_URL = '/api/v1';
@@ -161,6 +162,11 @@ class ApiService {
 
     async getContainerStats(id: string): Promise<any> {
         const response = await this.client.get(`/docker/containers/${id}/stats`);
+        return response.data;
+    }
+
+    async getContainerStatsAll(): Promise<ContainerStats[]> {
+        const response = await this.client.get('/docker/containers/stats/all');
         return response.data;
     }
 

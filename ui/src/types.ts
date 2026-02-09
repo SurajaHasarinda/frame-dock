@@ -123,3 +123,17 @@ export interface SystemStats {
     boot_time: number;
 }
 
+export interface ContainerStats {
+    id: string;
+    name: string;
+    cpu_percent: number;
+    memory_usage: number;
+    memory_limit: number;
+    memory_percent: number;
+    network_input: number;
+    network_output: number;
+    block_read: number;
+    block_write: number;
+    pids: number;
+}
+

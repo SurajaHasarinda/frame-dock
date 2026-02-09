@@ -43,7 +43,7 @@ const ImagesPage: React.FC = () => {
     const handleDelete = async (id: string) => {
         const image = images.find(img => img.id === id);
         const imageName = image?.tags[0] || id.substring(7, 19);
-        
+
         setConfirmDialog({
             isOpen: true,
             type: 'delete',
@@ -142,7 +142,7 @@ const ImagesPage: React.FC = () => {
                                     <div className="flex-1">
                                         <div className="flex items-center gap-2 flex-wrap mb-2">
                                             {image.tags.map((tag, idx) => (
-                                                <span key={idx} className="text-base font-bold text-white">
+                                                <span key={idx} className="text-base font-bold text-white break-all">
                                                     {tag}
                                                 </span>
                                             ))}

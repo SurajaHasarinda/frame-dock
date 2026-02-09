@@ -1,3 +1,4 @@
+import { createPortal } from 'react-dom';
 import React, { useState, useEffect } from 'react';
 import { X, Loader2, Cpu, MemoryStick, Info } from 'lucide-react';
 import { api } from '../../api';
@@ -79,10 +80,10 @@ const EditContainerModal: React.FC<EditContainerModalProps> = ({ isOpen, onClose
 
     if (!isOpen) return null;
 
-    return (
-        <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-            <div className="bg-slate-900 rounded-2xl border border-slate-800 w-full max-w-2xl max-h-[90vh] overflow-y-auto">
-                <div className="sticky top-0 bg-slate-900 border-b border-slate-800 p-6 flex items-center justify-between z-10">
+    return createPortal(
+        <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-[100] p-4">
+            <div className="bg-slate-900 rounded-2xl border border-slate-800 w-full max-w-2xl max-h-[90vh] overflow-y-auto custom-scrollbar flex flex-col shadow-2xl">
+                <div className="sticky top-0 bg-slate-900 border-b border-slate-800 p-6 flex items-center justify-between z-10 shrink-0">
                     <div>
                         <h2 className="text-xl font-bold text-white">Edit Container Resources</h2>
                         <p className="text-sm text-slate-400 mt-1">{container.name}</p>
@@ -93,6 +94,7 @@ const EditContainerModal: React.FC<EditContainerModalProps> = ({ isOpen, onClose
                 </div>
 
                 <form onSubmit={handleSubmit} className="p-6 space-y-6">
+                    {/* ... (rest of the form content) ... */}
                     {error && (
                         <div className="bg-red-500/10 border border-red-500/50 text-red-500 px-4 py-3 rounded-xl text-sm">
                             {error}
@@ -120,7 +122,7 @@ const EditContainerModal: React.FC<EditContainerModalProps> = ({ isOpen, onClose
                         <div>
                             <label className="text-xs text-slate-500">Status</label>
                             <p className={`text-sm font-medium ${container.state === 'running' ? 'text-success' :
-                                    container.state === 'exited' ? 'text-slate-400' : 'text-warning'
+                                container.state === 'exited' ? 'text-slate-400' : 'text-warning'
                                 }`}>
                                 {container.state ? container.state.charAt(0).toUpperCase() + container.state.slice(1) : 'Unknown'}
                             </p>
@@ -238,7 +240,8 @@ const EditContainerModal: React.FC<EditContainerModalProps> = ({ isOpen, onClose
                     </div>
                 </form>
             </div>
-        </div>
+        </div>,
+        document.body
     );
 };
 
