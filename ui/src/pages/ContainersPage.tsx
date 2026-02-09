@@ -31,7 +31,7 @@ const ContainersPage: React.FC = () => {
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
     const [isStatsModalOpen, setIsStatsModalOpen] = useState(false);
     const [selectedContainer, setSelectedContainer] = useState<Container | null>(null);
-    
+
     // Confirmation dialog state
     const [confirmDialog, setConfirmDialog] = useState({
         isOpen: false,
@@ -83,7 +83,7 @@ const ContainersPage: React.FC = () => {
             if (action === 'start') await api.startContainer(id);
             else if (action === 'stop') await api.stopContainer(id);
             else if (action === 'restart') await api.restartContainer(id);
-            
+
             setSnackbar({
                 isOpen: true,
                 message: `Container "${containerName}" ${action}ed successfully`,
@@ -111,7 +111,7 @@ const ContainersPage: React.FC = () => {
             if (action === 'delete') {
                 await api.deleteContainer(containerId, true);
             }
-            
+
             setSnackbar({
                 isOpen: true,
                 message: `Container "${containerName}" ${action}d successfully`,
@@ -212,7 +212,7 @@ const ContainersPage: React.FC = () => {
                                     </div>
                                     <div>
                                         <div className="flex items-center gap-3">
-                                            <h3 className="text-lg font-bold text-white group-hover:text-docker transition-colors">{container.name}</h3>
+                                            <h3 className="text-lg font-bold text-white group-hover:text-docker transition-colors truncate max-w-[180px] md:max-w-none" title={container.name}>{container.name}</h3>
                                             <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider ${container.status === ContainerStatus.RUNNING
                                                 ? 'bg-success/10 text-success'
                                                 : 'bg-danger/10 text-danger'
@@ -221,15 +221,15 @@ const ContainersPage: React.FC = () => {
                                             </span>
                                         </div>
                                         <div className="flex flex-wrap items-center gap-x-4 gap-y-1 mt-1">
-                                            <span className="text-xs text-slate-500 flex items-center gap-1.5">
-                                                <Layers size={12} /> {container.image}
+                                            <span className="text-xs text-slate-500 flex items-center gap-1.5 truncate max-w-[180px] md:max-w-[300px]" title={container.image}>
+                                                <Layers size={12} className="shrink-0" /> {container.image}
                                             </span>
                                             <span className="text-xs text-slate-500 flex items-center gap-1.5">
-                                                <Terminal size={12} /> ID: <code className="bg-slate-800 px-1 rounded">{container.id.substring(0, 12)}</code>
+                                                <Terminal size={12} className="shrink-0" /> ID: <code className="bg-slate-800 px-1 rounded">{container.id.substring(0, 12)}</code>
                                             </span>
                                             {container.ports && container.ports.length > 0 && (
-                                                <span className="text-xs text-slate-500 flex items-center gap-1.5">
-                                                    <Activity size={12} /> {container.ports.join(', ')}
+                                                <span className="text-xs text-slate-500 flex items-center gap-1.5 truncate max-w-[180px] md:max-w-none" title={container.ports.join(', ')}>
+                                                    <Activity size={12} className="shrink-0" /> {container.ports.join(', ')}
                                                 </span>
                                             )}
                                         </div>
