@@ -211,6 +211,8 @@ class DockerService:
                         block_write += entry.get("value", 0)
                 
                 return {
+                    "id": container.short_id,
+                    "name": container.name,
                     "cpu_percent": round(cpu_percent, 2),
                     "memory_usage": memory_usage,
                     "memory_limit": memory_limit,
@@ -225,6 +227,25 @@ class DockerService:
                 logger.error(f"Error getting stats for container {container_id}: {e}")
                 return None
         return None
+
+    def get_all_container_stats(self) -> List[Dict[str, Any]]:
+        self._check_client()
+        containers = self.client.containers.list() # List only running containers by default
+        results = []
+        for c in containers:
+            # Exclude self container if needed
+            if self.current_container_id and (c.id == self.current_container_id or c.id.startswith(self.current_container_id)):
+                continue
+
+            # We can optimise this by not calling get_container inside get_container_stats, 
+            # but for now reusing the logic is safer and cleaner code-wise.
+            stats = self.get_container_stats(c.id)
+            if stats:
+                results.append(stats)
+        
+        # Sort by memory usage descending by default
+        results.sort(key=lambda x: x['memory_usage'], reverse=True)
+        return results
 
     # --- Image Management ---
 

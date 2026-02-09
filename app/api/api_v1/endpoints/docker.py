@@ -109,6 +109,13 @@ def update_resources(container_id: str, resources: ContainerResourceUpdate, curr
         return {"success": True, "message": "Resources updated"}
     raise HTTPException(status_code=400, detail="Failed to update resources or container not found")
 
+@router.get("/containers/stats/all")
+def get_all_stats(current_user: str = Depends(get_current_user)):
+    """
+    Get real-time stats for all running containers.
+    """
+    return docker_service.get_all_container_stats()
+
 @router.get("/containers/{container_id}/stats")
 def get_stats(container_id: str, stream: bool = False, current_user: str = Depends(get_current_user)):
     """
