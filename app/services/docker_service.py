@@ -277,5 +277,271 @@ class DockerService:
         self._check_client()
         return self.client.images.prune(filters=filters)
 
+    def pull_image(self, image_name: str) -> bool:
+        """Pull the latest version of an image from the registry."""
+        self._check_client()
+        try:
+            logger.info(f"Pulling latest image: {image_name}")
+            self.client.images.pull(image_name)
+            return True
+        except APIError as e:
+            logger.error(f"Failed to pull image {image_name}: {e}")
+            return False
+
+    def update_container(self, container_id: str) -> Dict[str, Any]:
+        """
+        Update a container by pulling the latest image and recreating it
+        with the same configuration.
+        
+        Steps:
+        1. Get the current container's configuration
+        2. Pull the latest version of the image
+        3. Stop and remove the old container
+        4. Create a new container with the same configuration
+        5. Start the new container
+        """
+        self._check_client()
+        container = self.get_container(container_id)
+        if not container:
+            return {"success": False, "message": "Container not found"}
+
+        try:
+            # Extract configuration from the existing container
+            attrs = container.attrs
+            config = attrs.get("Config", {})
+            host_config = attrs.get("HostConfig", {})
+            network_settings = attrs.get("NetworkSettings", {})
+
+            # Get the image name (use tag if available, fall back to image ID)
+            image_name = config.get("Image", "")
+            if not image_name:
+                if container.image and container.image.tags:
+                    image_name = container.image.tags[0]
+                else:
+                    return {"success": False, "message": "Cannot determine image name for container"}
+
+            container_name = container.name
+            was_running = container.status == "running"
+
+            # Step 1: Pull the latest image
+            logger.info(f"Pulling latest image for container '{container_name}': {image_name}")
+            pull_success = self.pull_image(image_name)
+            if not pull_success:
+                return {"success": False, "message": f"Failed to pull latest image: {image_name}"}
+
+            # Step 2: Extract all configuration we need to preserve
+            # Ports
+            port_bindings = host_config.get("PortBindings") or {}
+            exposed_ports = config.get("ExposedPorts") or {}
+
+            # Environment variables
+            env_list = config.get("Env") or []
+
+            # Volumes / Binds
+            binds = host_config.get("Binds") or []
+            volumes = config.get("Volumes") or {}
+
+            # Command
+            cmd = config.get("Cmd")
+
+            # Entrypoint
+            entrypoint = config.get("Entrypoint")
+
+            # Working directory
+            working_dir = config.get("WorkingDir") or None
+
+            # User
+            user = config.get("User") or None
+
+            # Restart policy
+            restart_policy = host_config.get("RestartPolicy") or {}
+
+            # Resource limits
+            cpu_quota = host_config.get("CpuQuota") or None
+            cpu_period = host_config.get("CpuPeriod") or None
+            cpu_shares = host_config.get("CpuShares") or None
+            mem_limit = host_config.get("Memory") or None
+            memswap_limit = host_config.get("MemorySwap") or None
+
+            # Network mode
+            network_mode = host_config.get("NetworkMode") or None
+
+            # Collect custom networks to reconnect after creation
+            networks = network_settings.get("Networks") or {}
+
+            # Labels
+            labels = config.get("Labels") or {}
+
+            # Hostname / Domainname
+            hostname = config.get("Hostname") or None
+            domainname = config.get("Domainname") or None
+
+            # Privileged
+            privileged = host_config.get("Privileged", False)
+
+            # DNS
+            dns = host_config.get("Dns") or None
+            dns_search = host_config.get("DnsSearch") or None
+
+            # Extra hosts
+            extra_hosts = host_config.get("ExtraHosts") or None
+
+            # Tty and stdin
+            tty = config.get("Tty", False)
+            stdin_open = config.get("OpenStdin", False)
+
+            # Capabilities
+            cap_add = host_config.get("CapAdd") or None
+            cap_drop = host_config.get("CapDrop") or None
+
+            # Devices
+            devices = host_config.get("Devices") or None
+
+            # Security options
+            security_opt = host_config.get("SecurityOpt") or None
+
+            # Tmpfs
+            tmpfs = host_config.get("Tmpfs") or None
+
+            # Sysctls
+            sysctls = host_config.get("Sysctls") or None
+
+            # PID mode
+            pid_mode = host_config.get("PidMode") or None
+
+            # Step 3: Stop and remove the old container
+            logger.info(f"Stopping container '{container_name}'...")
+            if was_running:
+                try:
+                    container.stop(timeout=30)
+                except Exception as e:
+                    logger.warning(f"Error stopping container: {e}")
+
+            logger.info(f"Removing container '{container_name}'...")
+            try:
+                container.remove(force=True)
+            except Exception as e:
+                logger.error(f"Failed to remove container '{container_name}': {e}")
+                return {"success": False, "message": f"Failed to remove old container: {str(e)}"}
+
+            # Step 4: Build kwargs for the new container
+            kwargs: Dict[str, Any] = {
+                "image": image_name,
+                "name": container_name,
+                "detach": True,
+                "tty": tty,
+                "stdin_open": stdin_open,
+            }
+
+            # Determine if this is a host network or custom network
+            is_host_network = network_mode == "host"
+            
+            # Determine custom networks (not default/bridge/host)
+            custom_networks = {
+                name: net_config for name, net_config in networks.items()
+                if name not in ("bridge", "host", "none")
+            }
+
+            # Port bindings are incompatible with host network mode
+            if port_bindings and not is_host_network:
+                kwargs["ports"] = port_bindings
+            if env_list:
+                kwargs["environment"] = env_list
+            if binds:
+                kwargs["volumes"] = binds
+            if cmd:
+                kwargs["command"] = cmd
+            if entrypoint:
+                kwargs["entrypoint"] = entrypoint
+            if working_dir:
+                kwargs["working_dir"] = working_dir
+            if user:
+                kwargs["user"] = user
+            if restart_policy and restart_policy.get("Name"):
+                kwargs["restart_policy"] = restart_policy
+            if labels:
+                kwargs["labels"] = labels
+            if hostname and not is_host_network:
+                kwargs["hostname"] = hostname
+            if domainname:
+                kwargs["domainname"] = domainname
+            if privileged:
+                kwargs["privileged"] = privileged
+            if dns:
+                kwargs["dns"] = dns
+            if dns_search:
+                kwargs["dns_search"] = dns_search
+            if extra_hosts:
+                kwargs["extra_hosts"] = extra_hosts
+            if cap_add:
+                kwargs["cap_add"] = cap_add
+            if cap_drop:
+                kwargs["cap_drop"] = cap_drop
+            if devices:
+                kwargs["devices"] = [
+                    f"{d['PathOnHost']}:{d['PathInContainer']}:{d['CgroupPermissions']}"
+                    for d in devices
+                ]
+            if security_opt:
+                kwargs["security_opt"] = security_opt
+            if tmpfs:
+                kwargs["tmpfs"] = tmpfs
+            if sysctls:
+                kwargs["sysctls"] = sysctls
+            if pid_mode:
+                kwargs["pid_mode"] = pid_mode
+
+            # Network mode handling:
+            # If a custom network exists, use it as the primary network_mode
+            # Otherwise fall back to the original network_mode
+            if custom_networks:
+                # Use the first custom network as the primary network
+                primary_network = list(custom_networks.keys())[0]
+                kwargs["network"] = primary_network
+            elif network_mode and network_mode not in ("default", "bridge"):
+                kwargs["network_mode"] = network_mode
+
+            # Resource limits
+            if cpu_quota and cpu_quota > 0:
+                kwargs["cpu_quota"] = cpu_quota
+            if cpu_period and cpu_period > 0:
+                kwargs["cpu_period"] = cpu_period
+            if cpu_shares and cpu_shares > 0:
+                kwargs["cpu_shares"] = cpu_shares
+            if mem_limit and mem_limit > 0:
+                kwargs["mem_limit"] = mem_limit
+            if memswap_limit and memswap_limit > 0:
+                kwargs["memswap_limit"] = memswap_limit
+
+            # Step 5: Create the new container
+            logger.info(f"Creating new container '{container_name}' with latest image...")
+            logger.info(f"Container kwargs: image={image_name}, network_mode={network_mode}, "
+                        f"custom_networks={list(custom_networks.keys()) if custom_networks else 'none'}, "
+                        f"ports={'yes' if port_bindings else 'no'}, "
+                        f"volumes={'yes' if binds else 'no'}")
+            
+            new_container = self.client.containers.run(**kwargs)
+
+            # Connect to additional custom networks (if more than one)
+            if len(custom_networks) > 1:
+                for net_name in list(custom_networks.keys())[1:]:
+                    try:
+                        network = self.client.networks.get(net_name)
+                        network.connect(new_container)
+                        logger.info(f"Connected container to additional network: {net_name}")
+                    except Exception as e:
+                        logger.warning(f"Failed to connect to network '{net_name}': {e}")
+
+            logger.info(f"Container '{container_name}' updated successfully. New ID: {new_container.short_id}")
+            return {
+                "success": True,
+                "message": f"Container '{container_name}' updated to latest image",
+                "container_id": new_container.short_id
+            }
+
+        except Exception as e:
+            logger.error(f"Failed to update container '{container_id}': {e}", exc_info=True)
+            return {"success": False, "message": f"Update failed: {str(e)}"}
+
 # Global instance
 docker_service = DockerService()

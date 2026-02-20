@@ -81,6 +81,22 @@ def restart_container(container_id: str, current_user: str = Depends(get_current
         return {"success": True, "message": "Container restarted"}
     raise HTTPException(status_code=400, detail="Failed to restart container or container not found")
 
+@router.post("/containers/{container_id}/update", response_model=ContainerAction)
+def update_container(container_id: str, current_user: str = Depends(get_current_user)):
+    """
+    Update a container by pulling the latest image and recreating it
+    with the same configuration.
+    """
+    try:
+        result = docker_service.update_container(container_id)
+        if result["success"]:
+            return result
+        raise HTTPException(status_code=400, detail=result.get("message", "Failed to update container"))
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
 @router.delete("/containers/{container_id}", response_model=ContainerAction)
 def delete_container(container_id: str, force: bool = False, current_user: str = Depends(get_current_user)):
     if docker_service.delete_container(container_id, force=force):
