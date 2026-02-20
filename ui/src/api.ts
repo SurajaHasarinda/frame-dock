@@ -177,6 +177,11 @@ class ApiService {
         await this.client.patch(`/docker/containers/${id}/resources`, resources);
     }
 
+    async updateContainer(id: string): Promise<{ success: boolean; message: string; container_id?: string }> {
+        const response = await this.client.post(`/docker/containers/${id}/update`);
+        return response.data;
+    }
+
     // Schedules
     async getSchedules(): Promise<Schedule[]> {
         const response = await this.client.get('/schedules/');

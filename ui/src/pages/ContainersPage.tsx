@@ -12,7 +12,8 @@ import {
     Box,
     Layers,
     Terminal,
-    Settings
+    Settings,
+    Download
 } from 'lucide-react';
 import { api } from '../api';
 import { Container, ContainerStatus } from '../types';
@@ -31,13 +32,14 @@ const ContainersPage: React.FC = () => {
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
     const [isStatsModalOpen, setIsStatsModalOpen] = useState(false);
     const [selectedContainer, setSelectedContainer] = useState<Container | null>(null);
+    const [updatingContainers, setUpdatingContainers] = useState<Set<string>>(new Set());
 
     // Confirmation dialog state
     const [confirmDialog, setConfirmDialog] = useState({
         isOpen: false,
         title: '',
         message: '',
-        action: '' as 'start' | 'stop' | 'restart' | 'delete' | '',
+        action: '' as 'start' | 'stop' | 'restart' | 'delete' | 'update' | '',
         containerId: '',
     });
 
@@ -64,7 +66,7 @@ const ContainersPage: React.FC = () => {
         fetchContainers();
     }, []);
 
-    const handleAction = async (action: 'start' | 'stop' | 'restart' | 'delete', id: string) => {
+    const handleAction = async (action: 'start' | 'stop' | 'restart' | 'delete' | 'update', id: string) => {
         const container = containers.find(c => c.id === id);
         const containerName = container?.name || id.substring(0, 12);
 
@@ -73,6 +75,17 @@ const ContainersPage: React.FC = () => {
                 isOpen: true,
                 title: 'Delete Container',
                 message: `Are you sure you want to delete "${containerName}"? This action cannot be undone.`,
+                action,
+                containerId: id,
+            });
+            return;
+        }
+
+        if (action === 'update') {
+            setConfirmDialog({
+                isOpen: true,
+                title: 'Update Container',
+                message: `This will pull the latest image for "${containerName}" and recreate the container with the same configuration. The container will be temporarily stopped during the update.`,
                 action,
                 containerId: id,
             });
@@ -110,6 +123,24 @@ const ContainersPage: React.FC = () => {
         try {
             if (action === 'delete') {
                 await api.deleteContainer(containerId, true);
+            } else if (action === 'update') {
+                setUpdatingContainers(prev => new Set(prev).add(containerId));
+                try {
+                    await api.updateContainer(containerId);
+                    setSnackbar({
+                        isOpen: true,
+                        message: `Container "${containerName}" updated to latest image`,
+                        type: 'success',
+                    });
+                } finally {
+                    setUpdatingContainers(prev => {
+                        const next = new Set(prev);
+                        next.delete(containerId);
+                        return next;
+                    });
+                }
+                fetchContainers();
+                return;
             }
 
             setSnackbar({
@@ -241,31 +272,46 @@ const ContainersPage: React.FC = () => {
                                         {container.status === ContainerStatus.RUNNING ? (
                                             <button
                                                 onClick={() => handleAction('stop', container.id)}
-                                                className="p-2 text-warning hover:bg-warning/10 rounded-lg transition-colors"
+                                                className="p-2 text-warning hover:bg-warning/10 rounded-lg transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
                                                 title="Stop"
+                                                disabled={updatingContainers.has(container.id)}
                                             >
                                                 <Square size={18} fill="currentColor" />
                                             </button>
                                         ) : (
                                             <button
                                                 onClick={() => handleAction('start', container.id)}
-                                                className="p-2 text-success hover:bg-success/10 rounded-lg transition-colors"
+                                                className="p-2 text-success hover:bg-success/10 rounded-lg transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
                                                 title="Start"
+                                                disabled={updatingContainers.has(container.id)}
                                             >
                                                 <Play size={18} fill="currentColor" />
                                             </button>
                                         )}
                                         <button
                                             onClick={() => handleAction('restart', container.id)}
-                                            className="p-2 text-docker hover:bg-docker/10 rounded-lg transition-colors"
+                                            className="p-2 text-docker hover:bg-docker/10 rounded-lg transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
                                             title="Restart"
+                                            disabled={updatingContainers.has(container.id)}
                                         >
                                             <RotateCcw size={18} />
                                         </button>
                                         <button
+                                            onClick={() => handleAction('update', container.id)}
+                                            className={`p-2 rounded-lg transition-colors disabled:cursor-not-allowed ${updatingContainers.has(container.id)
+                                                ? 'text-purple-400 bg-purple-500/10'
+                                                : 'text-purple-400 hover:bg-purple-500/10'
+                                                }`}
+                                            title="Update to latest image"
+                                            disabled={updatingContainers.has(container.id)}
+                                        >
+                                            <Download size={18} className={updatingContainers.has(container.id) ? 'animate-pulse' : ''} />
+                                        </button>
+                                        <button
                                             onClick={() => handleAction('delete', container.id)}
-                                            className="p-2 text-danger hover:bg-danger/10 rounded-lg transition-colors"
+                                            className="p-2 text-danger hover:bg-danger/10 rounded-lg transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
                                             title="Delete"
+                                            disabled={updatingContainers.has(container.id)}
                                         >
                                             <Trash2 size={18} />
                                         </button>
@@ -276,8 +322,9 @@ const ContainersPage: React.FC = () => {
                                             setSelectedContainer(container);
                                             setIsEditModalOpen(true);
                                         }}
-                                        className="p-2 text-slate-400 hover:text-white hover:bg-slate-800 rounded-lg transition-colors"
+                                        className="p-2 text-slate-400 hover:text-white hover:bg-slate-800 rounded-lg transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
                                         title="Edit Resources"
+                                        disabled={updatingContainers.has(container.id)}
                                     >
                                         <Settings size={18} />
                                     </button>
@@ -377,8 +424,8 @@ const ContainersPage: React.FC = () => {
                 isOpen={confirmDialog.isOpen}
                 title={confirmDialog.title}
                 message={confirmDialog.message}
-                variant="danger"
-                confirmText="Delete"
+                variant={confirmDialog.action === 'update' ? 'warning' : 'danger'}
+                confirmText={confirmDialog.action === 'update' ? 'Update' : 'Delete'}
                 onConfirm={handleConfirmAction}
                 onCancel={() => setConfirmDialog({ ...confirmDialog, isOpen: false })}
             />
